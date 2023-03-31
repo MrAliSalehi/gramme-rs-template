@@ -10,6 +10,6 @@ pub struct TelegramAccount {
     #[arg(short = 'i',long, name="id")]
     pub api_id: i32,
 
-    #[arg(short,long, name="phone")]
+    #[arg(short = 'p',long, name="phone")]
     pub phone: String
 }
