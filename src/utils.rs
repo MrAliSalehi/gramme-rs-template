@@ -1,25 +1,28 @@
-use std::io::{BufRead, Write};
+use std::error::Error;
+use std::path::PathBuf;
+use async_std::io::WriteExt;
 use crate::account::TelegramAccount;
 
-pub fn prompt(message: &str) -> Option<String> {
-    let stdout = std::io::stdout();
-    let mut stdout = stdout.lock();
-    stdout.write_all(message.as_bytes()).unwrap();
-    stdout.flush().unwrap();
-
-    let stdin = std::io::stdin();
-    let mut stdin = stdin.lock();
+pub async fn prompt(message: &str) -> Result<String, Box<dyn Error>> {
+    let mut stdout = async_std::io::stdout();
+    stdout.write_all(message.as_bytes()).await?;
+    stdout.flush().await?;
 
     let mut line = String::new();
-    stdin.read_line(&mut line).unwrap();
-    return Some(line);
+
+    async_std::io::stdin().read_line(&mut line).await?;
+
+    Ok(line)
 }
 
-pub fn config_exists() -> bool {
+pub fn config_path() -> PathBuf {
     std::env::current_dir()
         .unwrap()
         .join("config.json")
-        .exists()
+}
+
+pub fn config_exists() -> bool {
+    config_path().exists()
 }
 
 pub fn is_valid(config: &TelegramAccount) -> bool {
