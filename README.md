@@ -17,7 +17,7 @@ for handling your telegram account you have 2 options:
 
 - `./gramme-rs-template --id 222 --hash xxx --phone +1111`
 
-*you can use `-i` instead of `--id` and `-a` instead of `--hash`.*
+*you can use `-i` instead of `--id` and `-h` instead of `--hash`.*
 
 after passing the arguments, IF they were valid it automatically save them 
 in `config.json` and will re-use them in the next time.

@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Parser, Debug, Deserialize, Serialize)]
 #[command(color=ColorChoice::Always,disable_help_flag=true)]
 pub struct TelegramAccount {
-    #[arg(short = 'a',long, name="hash")]
+    #[arg(short = 'h',long, name="hash")]
     pub api_hash: String,
 
     #[arg(short = 'i',long, name="id")]
