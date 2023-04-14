@@ -38,7 +38,7 @@ async fn main() -> eyre::Result<()> {
     if !client.is_authorized().await? {
         let (login_token, code) = (
             client.request_login_code(&var("PHONE")?, api_id, &api_hash).await?,
-            prompt("Enter Code: ").await?
+            prompt("Enter code: ").await?
         );
 
         if let Err(e) = client.sign_in(&login_token, &code).await {
