@@ -1,78 +1,60 @@
-use std::error::Error;
-use async_std::io::WriteExt;
-use grammers_client::{Config, InitParams, Client};
-use grammers_session::{Session};
-use clap::Parser;
-use crate::account::TelegramAccount;
-use crate::account_manager::*;
-use crate::utils::*;
+mod prelude;
 
-mod utils;
-mod account_manager;
-mod account;
+
+use crate::prelude::*;
+
+use std::{
+    env::var,
+    sync::Arc
+};
+use grammers_client::{
+    Config,
+    InitParams,
+    Client,
+    SignInError
+};
+use grammers_session::Session;
+
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    let account = get_tel_account().await.expect("cant get the telegram account");
+async fn main() -> eyre::Result<()> {
+    dotenv::dotenv().ok();
+    let (api_hash, api_id, session_file) = (
+        Arc::new(var("API_HASH")?),
+        var("API_ID")?.parse::<i32>()?,
+        var("SESSION_FILE")?
+    );
 
-    let login = Client::connect(Config {
-        api_hash: account.api_hash.clone(),
-        api_id: account.api_id,
+    let client = Client::connect(Config {
+        api_hash: api_hash.to_string(),
+        api_id: api_id,
         params: InitParams {
             catch_up: true,
             ..Default::default()
         },
-        session: Session::load_file_or_create(SESSION_FILE).expect("Failed to create session"),
-    }).await;
+        session: Session::load_file_or_create(&session_file)?,
+    }).await?;
 
-    if login.is_err() {
-        panic!("failed to connect to the telegram");
+    if !client.is_authorized().await? {
+        let (login_token, code) = (
+            client.request_login_code(&var("PHONE")?, api_id, &api_hash).await?,
+            prompt("Enter code: ").await?
+        );
+
+        if let Err(e) = client.sign_in(&login_token, &code).await {
+            let SignInError::PasswordRequired(password_token) = e else {
+                return Err(e.into());
+            };
+
+            let password = prompt( &format!("Enter the password (hint {}): ", password_token.hint().unwrap_or_default()) ).await?;
+            client.check_password(password_token, password).await?;
+        };
+        client.session().save_to_file(&session_file)?
     }
 
-    let client_handler = login.expect("failed to create client");
-
-    if !client_handler.is_authorized().await.expect("couldnt get authorization status")
-    {
-        println!("you are not authorized,requesting verification code");
-
-        let signed_in = sign_in_async(&account.phone, account.api_id, &account.api_hash, &client_handler)
-            .await;
-
-        check_status_async(&client_handler, signed_in).await?;
-
-        save_session(&client_handler)
-    }
-
-    //write code...
-    let me = client_handler.get_me().await?;
-    println!("logged in as: {}", me.username().unwrap_or(me.id().to_string().as_str()));
-    client_handler.send_message(me, "hello from gramme-rs template").await?;
+    let me = client.get_me().await?;
+    println!("logged in as: {} ({})", me.username().unwrap_or_default(), me.id());
+    client.send_message(me, "hello from gramme-rs template").await?;
 
     Ok(())
-}
-
-async fn get_tel_account() -> Option<TelegramAccount> {
-    let config: TelegramAccount;
-
-    if config_exists() {
-        let content = async_std::fs::read_to_string("config.json").await
-            .expect("Failed to read config file,");
-
-        config = serde_json::from_str(&content).expect("Failed To parse config,invalid json format.");
-    } else {
-        println!("config.json not found, expecting arguments from CLI");
-        config = TelegramAccount::parse();
-        let serialize = serde_json::to_string(&config)
-            .expect("cant serialize the config, invalid format!");
-        async_std::fs::File::create(config_path()).await
-            .expect("cant create the config file")
-            .write(serialize.as_bytes()).await
-            .expect("cant write in config file");
-    }
-
-    if !is_valid(&config) {
-        panic!("Invalid config data");
-    }
-    println!("Account:{},[{}-{}].", config.phone, config.api_hash, config.api_id);
-    Some(config)
 }
