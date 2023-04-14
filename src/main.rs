@@ -12,7 +12,7 @@ use grammers_client::{
     Client,
     SignInError
 };
-use grammers_session::{Session};
+use grammers_session::Session;
 
 
 #[tokio::main]
