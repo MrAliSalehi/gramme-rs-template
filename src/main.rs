@@ -62,7 +62,7 @@ async fn main() -> eyre::Result<()> {
 
     let me = client.get_me().await?;
     println!("Logged in as {} (ID: {})", me.username().unwrap_or_default(), me.id());
-    client.send_message(me, "Hello from gramme-rs template").await?;
+    client.send_message(me, "Hello from gramme.rs template").await?;
 
     Ok(())
 }
