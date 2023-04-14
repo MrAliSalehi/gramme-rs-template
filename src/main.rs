@@ -32,7 +32,7 @@ async fn main() -> eyre::Result<()> {
             ..Default::default()
         },
         session: Session::load_file_or_create(&session_file)?,
-    }).await.unwrap();
+    }).await?;
 
     if !client.is_authorized().await? {
         let (login_token, code) = (
