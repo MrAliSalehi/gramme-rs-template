@@ -46,14 +46,14 @@ async fn main() -> eyre::Result<()> {
                 return Err(e.into());
             };
 
-            let password = prompt( &format!("Enter the password (hint {}): ", password_token.hint().unwrap_or_default()) ).await?;
+            let password = prompt( &format!("Enter the password (hint `{}`): ", password_token.hint().unwrap_or_default()) ).await?;
             client.check_password(password_token, password).await?;
         };
         client.session().save_to_file(&session_file)?
     }
 
     let me = client.get_me().await?;
-    println!("Logged in as: {} ({})", me.username().unwrap_or_default(), me.id());
+    println!("Logged in as: `{}` (id `{})", me.username().unwrap_or_default(), me.id());
     client.send_message(me, "Hello from gramme-rs template").await?;
 
     Ok(())
