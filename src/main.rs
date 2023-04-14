@@ -7,6 +7,10 @@ use std::{
     env::var,
     sync::Arc
 };
+use tracing_subscriber::{
+    layer::SubscriberExt,
+    util::SubscriberInitExt
+};
 use grammers_client::{
     Config,
     InitParams,
@@ -19,6 +23,10 @@ use grammers_session::Session;
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
     dotenv::dotenv().ok();
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap())
+        .with(tracing_subscriber::fmt::layer())
+        .init();
     let (api_hash, api_id, session_file) = (
         Arc::new(var("API_HASH")?),
         var("API_ID")?.parse::<i32>()?,
