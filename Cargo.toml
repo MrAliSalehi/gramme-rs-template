@@ -1,17 +1,19 @@
 [package]
-name = "project-name"
+name = "{{project-name}}"
 version = "1.0.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-dotenv = "0.15.0"
 eyre = "0.6.8"
 serde = { version = "1.0.160", features = ["derive"] }
 serde_json = "1.0.96"
+dotenv = "0.15.0"
+tracing = "0.1.37"
+tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
 
-tokio = { version = "1.27.0", features = ["full"] }
+tokio = { version = "1.27.0", features = ["macros", "rt-multi-thread"] }
 grammers-client = { git = "https://github.com/Lonami/grammers" }
 grammers-session = { git = "https://github.com/Lonami/grammers" }
 grammers-tl-types = { git = "https://github.com/Lonami/grammers" }
