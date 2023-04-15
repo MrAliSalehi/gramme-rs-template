@@ -1,24 +1,11 @@
 mod prelude;
 
-
 use crate::prelude::*;
 
-use std::{
-    env::var,
-    sync::Arc
-};
-use tracing_subscriber::{
-    layer::SubscriberExt,
-    util::SubscriberInitExt
-};
-use grammers_client::{
-    Config,
-    InitParams,
-    Client,
-    SignInError
-};
+use grammers_client::{Client, Config, InitParams, SignInError};
 use grammers_session::Session;
-
+use std::{env::var, sync::Arc};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
@@ -30,7 +17,7 @@ async fn main() -> eyre::Result<()> {
     let (api_hash, api_id, session_file) = (
         Arc::new(var("API_HASH")?),
         var("API_ID")?.parse::<i32>()?,
-        var("SESSION_FILE")?
+        var("SESSION_FILE")?,
     );
 
     let client = Client::connect(Config {
@@ -41,12 +28,15 @@ async fn main() -> eyre::Result<()> {
             ..Default::default()
         },
         session: Session::load_file_or_create(&session_file)?,
-    }).await?;
+    })
+    .await?;
 
     if !client.is_authorized().await? {
         let (login_token, code) = (
-            client.request_login_code(&var("PHONE")?, api_id, &api_hash).await?,
-            prompt("verification code: ").await?
+            client
+                .request_login_code(&var("PHONE")?, api_id, &api_hash)
+                .await?,
+            prompt("verification code: ").await?,
         );
 
         if let Err(e) = client.sign_in(&login_token, &code).await {
@@ -54,15 +44,25 @@ async fn main() -> eyre::Result<()> {
                 return Err(e.into());
             };
 
-            let password = prompt( &format!("2FA password (hint: {}): ", password_token.hint().unwrap_or_default()) ).await?;
+            let password = prompt(&format!(
+                "2FA password (hint: {}): ",
+                password_token.hint().unwrap_or_default()
+            ))
+            .await?;
             client.check_password(password_token, password).await?;
         };
         client.session().save_to_file(&session_file)?
     }
 
     let me = client.get_me().await?;
-    tracing::info!("logged in as {} (ID: {})", me.username().unwrap_or_default(), me.id());
-    client.send_message(me, "hello from gramme.rs template").await?;
+    tracing::info!(
+        "logged in as {} (ID: {})",
+        me.username().unwrap_or_default(),
+        me.id()
+    );
+    client
+        .send_message(me, "hello from gramme.rs template")
+        .await?;
 
     Ok(())
 }

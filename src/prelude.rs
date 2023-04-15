@@ -1,6 +1,5 @@
 use std::io::Write;
 
-
 pub async fn prompt(message: &str) -> eyre::Result<String> {
     let mut stdout = std::io::stdout();
     stdout.write_all(message.as_bytes())?;
