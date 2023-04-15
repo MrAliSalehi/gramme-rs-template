@@ -46,7 +46,7 @@ async fn main() -> eyre::Result<()> {
     if !client.is_authorized().await? {
         let (login_token, code) = (
             client.request_login_code(&var("PHONE")?, api_id, &api_hash).await?,
-            prompt("Code: ").await?
+            prompt("code: ").await?
         );
 
         if let Err(e) = client.sign_in(&login_token, &code).await {
@@ -54,15 +54,15 @@ async fn main() -> eyre::Result<()> {
                 return Err(e.into());
             };
 
-            let password = prompt( &format!("Password (hint: {}): ", password_token.hint().unwrap_or_default()) ).await?;
+            let password = prompt( &format!("password (hint: {}): ", password_token.hint().unwrap_or_default()) ).await?;
             client.check_password(password_token, password).await?;
         };
         client.session().save_to_file(&session_file)?
     }
 
     let me = client.get_me().await?;
-    tracing::info!("Logged in as {} (ID: {})", me.username().unwrap_or_default(), me.id());
-    client.send_message(me, "Hello from gramme.rs template").await?;
+    tracing::info!("logged in as {} (ID: {})", me.username().unwrap_or_default(), me.id());
+    client.send_message(me, "hello from gramme.rs template").await?;
 
     Ok(())
 }
