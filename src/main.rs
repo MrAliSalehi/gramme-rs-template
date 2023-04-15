@@ -46,7 +46,7 @@ async fn main() -> eyre::Result<()> {
     if !client.is_authorized().await? {
         let (login_token, code) = (
             client.request_login_code(&var("PHONE")?, api_id, &api_hash).await?,
-            prompt("code: ").await?
+            prompt("verification code: ").await?
         );
 
         if let Err(e) = client.sign_in(&login_token, &code).await {
@@ -54,7 +54,7 @@ async fn main() -> eyre::Result<()> {
                 return Err(e.into());
             };
 
-            let password = prompt( &format!("password (hint: {}): ", password_token.hint().unwrap_or_default()) ).await?;
+            let password = prompt( &format!("2FA password (hint: {}): ", password_token.hint().unwrap_or_default()) ).await?;
             client.check_password(password_token, password).await?;
         };
         client.session().save_to_file(&session_file)?
