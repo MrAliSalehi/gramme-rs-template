@@ -22,7 +22,7 @@ async fn main() -> eyre::Result<()> {
 
     let client = Client::connect(Config {
         api_hash: api_hash.to_string(),
-        api_id: api_id,
+        api_id,
         params: InitParams {
             catch_up: true,
             ..Default::default()
