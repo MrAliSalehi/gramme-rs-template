@@ -1,5 +1,6 @@
 [package]
-name = "{{project-name}}"
+#name = "{{project-name}}"
+name="gramme-rs-template"
 version = "1.0.0"
 edition = "2021"
 
@@ -12,8 +13,8 @@ serde_json = "1.0.96"
 dotenv = "0.15.0"
 tracing = "0.1.37"
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
-
+log = "0.4.20"
 tokio = { version = "1.27.0", features = ["macros", "tracing", "rt-multi-thread"] }
-grammers-client = { git = "https://github.com/Lonami/grammers" }
-grammers-session = { git = "https://github.com/Lonami/grammers" }
-grammers-tl-types = { git = "https://github.com/Lonami/grammers" }
+grammers-client = { git = "https://github.com/mralisalehi/grammers" }
+grammers-session = { git = "https://github.com/mralisalehi/grammers" }
+grammers-tl-types = { git = "https://github.com/mralisalehi/grammers" }
